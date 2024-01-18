@@ -1,0 +1,8 @@
+.DS_Store
+*.vo*
+*.aux
+*.glob
+*.cache
+*.cmi
+*.cmo
+*Makefile.*
