@@ -490,7 +490,28 @@ Check <{[x:=true] x}>.
 Inductive substi (s : tm) (x : string) : tm -> tm -> Prop :=
   | s_var1 :
       substi s x (tm_var x) s
-  (* FILL IN HERE *)
+  | s_val2 : forall y,
+      x <> y ->
+      substi s x (tm_var y) (tm_var y)
+  | s_abs1 : forall T t,
+      substi s x <{ \x:T, t }> <{ \x:T, t }>
+  | s_abs2 : forall y T t t',
+      x <> y ->
+      substi s x t t' ->
+      substi s x <{ \y:T, t }> <{ \y:T, t' }>
+  | s_app : forall t1 t1' t2 t2',
+      substi s x t1 t1' ->
+      substi s x t2 t2' ->
+      substi s x <{ t1 t2 }> <{ t1' t2'}>
+  | s_true :
+      substi s x tm_true tm_true
+  | s_false :
+      substi s x tm_false tm_false
+  | s_if : forall t1 t1' t2 t2' t3 t3',
+      substi s x t1 t1' ->
+      substi s x t2 t2' ->
+      substi s x t3 t3' ->
+      substi s x <{ if t1 then t2 else t3 }> <{ if t1' then t2' else t3' }>
 .
 
 Hint Constructors substi : core.
@@ -498,7 +519,19 @@ Hint Constructors substi : core.
 Theorem substi_correct : forall s x t t',
   <{ [x:=s]t }> = t' <-> substi s x t t'.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros. split.
+  - generalize dependent t'. generalize dependent s.
+    generalize dependent x0.
+    induction t; simpl; intros;
+      try (destruct (eqb_spec x0 s));
+      try (destruct t'; try solve_by_invert);
+      try (inversion H);
+      subst; auto.
+  - intros. induction H; simpl;
+      try (rewrite eqb_refl);
+      try (apply eqb_neq in H; rewrite H);
+      subst; reflexivity.
+Qed.
 (** [] *)
 
 (* ================================================================= *)
@@ -692,13 +725,17 @@ Lemma step_example5 :
        <{idBBBB idBB idB}>
   -->* idB.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  eapply multi_step.
+  { apply ST_App1. apply ST_AppAbs. apply v_abs. }
+  eapply multi_step.
+  { simpl. apply ST_AppAbs. apply v_abs. }
+  simpl. apply multi_refl.
+Qed.
 
 Lemma step_example5_with_normalize :
        <{idBBBB idBB idB}>
   -->* idB.
-Proof.
-  (* FILL IN HERE *) Admitted.
+Proof. normalize. Qed.
 (** [] *)
 
 (* ################################################################# *)
@@ -816,7 +853,7 @@ Proof. eauto. Qed.
 
 Example typing_example_1' :
   empty |-- \x:Bool, x \in (Bool -> Bool).
-Proof. auto.  Qed.
+Proof. auto. Qed.
 
 (** More examples:
 
@@ -844,7 +881,11 @@ Example typing_example_2_full :
           (y (y x)) \in
     (Bool -> (Bool -> Bool) -> Bool).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  apply T_Abs. apply T_Abs. apply T_App with (T2 := <{ Bool }>).
+  - apply T_Var. rewrite update_eq. reflexivity.
+  - apply T_App with (T2 := <{ Bool }>);
+    apply T_Var; cbv; reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, standard (typing_example_3)
@@ -852,7 +893,7 @@ Proof.
     Formally prove the following typing derivation holds:
 
     
-       empty |-- \x:Bool->B, \y:Bool->Bool, \z:Bool,
+       empty |-- \x:Bool->Bool, \y:Bool->Bool, \z:Bool,
                    y (x z)
              \in T.
 *)
@@ -866,7 +907,11 @@ Example typing_example_3 :
                (y (x z)) \in
       T.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  exists <{ (Bool -> Bool) -> (Bool -> Bool) -> Bool -> Bool }>.
+  repeat apply T_Abs. apply T_App with (T2 := <{ Bool }>).
+  - apply T_Var. cbv. reflexivity.
+  - apply T_App with (T2 := <{ Bool }>); apply T_Var; cbv; reflexivity. 
+Qed.
 (** [] *)
 
 (** We can also show that some terms are _not_ typable.  For example,
@@ -908,7 +953,18 @@ Example typing_nonexample_3 :
         empty |--
           \x:S, x x \in T).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros Hc. destruct Hc as [T Hc].
+  inversion Hc; subst; clear Hc.
+  inversion H; subst; clear H.
+  inversion H5; subst; clear H5.
+  inversion H2; subst; clear H2.
+  inversion H4; subst; clear H4.
+  cbv in *. injection H1 as H1.
+  injection H2 as H2. subst.
+  generalize dependent T1. induction T2; intros.
+  - discriminate H2.
+  - injection H2 as H21 H22. eauto. 
+Qed.
 (** [] *)
 
 End STLC.
