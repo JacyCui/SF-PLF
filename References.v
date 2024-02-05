@@ -520,7 +520,7 @@ Notation "t1 ; t2" := (tseq t1 t2) (in custom stlc at level 3).
 
 would it behave the same? *)
 
-(* FILL IN HERE *)
+(* According to the SmallStep semantics of [let], yes. *)
 
 (* Do not modify the following line: *)
 Definition manual_grade_for_compact_update : option (nat*string) := None.
@@ -577,7 +577,8 @@ Definition manual_grade_for_compact_update : option (nat*string) := None.
 
     Show how this can lead to a violation of type safety. *)
 
-(* FILL IN HERE *)
+(* Different types for the same storage cell could
+  make a program stuck. *)
 
 (* Do not modify the following line: *)
 Definition manual_grade_for_type_safety_violation : option (nat*string) := None.
@@ -1057,7 +1058,21 @@ Theorem cyclic_store:
     t / nil -->*
     <{ unit }> / (<{ \x:Nat, (!(loc 1)) x }> :: <{ \x:Nat, (!(loc 0)) x }> :: nil).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  exists <{ ref 0; ref 0; 
+    (loc 0 := \x:Nat, (!(loc 1)) x);
+    (loc 1 := \x:Nat, (!(loc 0)) x)
+  }>.
+  unfold ";". eapply multi_step. auto.
+  simpl. eapply multi_step. auto.
+  simpl. eapply multi_step. auto.
+  simpl. eapply multi_step. auto.
+  simpl. eapply multi_step.
+  { apply ST_App2. auto. apply ST_Assign. auto. simpl. lia. }
+  simpl. eapply multi_step. auto.
+  simpl. eapply multi_step.
+  { apply ST_Assign. auto. simpl. lia. }
+  simpl. apply multi_refl.
+Qed.
 (** [] *)
 
 (** These problems arise from the fact that our proposed
@@ -1271,7 +1286,7 @@ Definition store_well_typed (ST:store_ty) (st:store) :=
     different store typings [ST1] and [ST2] such that both
     [ST1 |-- st] and [ST2 |-- st]? *)
 
-(* FILL IN HERE *)
+(* [!(loc 0) :: nil] *)
 
 Theorem store_not_unique:
   exists st, exists ST1, exists ST2,
@@ -1279,7 +1294,13 @@ Theorem store_not_unique:
     store_well_typed ST2 st /\
     ST1 <> ST2.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  exists (<{!(loc 0)}> :: nil), (Ty_Nat :: nil), (Ty_Unit :: nil).
+  unfold store_well_typed. split; split; try split; simpl; intros;
+    try (inversion H; subst; clear H; try solve_by_invert;
+    unfold store_lookup; unfold store_Tlookup; simpl);
+    auto.
+  intros Contra. discriminate Contra.
+Qed.
 (** [] *)
 
 (** We can now state something closer to the desired preservation
@@ -1913,24 +1934,36 @@ Qed.
     sure it gives the correct result when applied to the argument
     [4].) *)
 
-Definition factorial : tm
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition factorial : tm :=
+  <{(\r : Ref (Nat -> Nat), 
+    (r := (\x : Nat, if0 x then 1 else x * ((!r) (pred x)))); !r) 
+    (ref (\x : Nat, x))}>.
 
 Lemma factorial_type : empty; nil |-- factorial \in (Nat -> Nat).
 Proof with eauto.
-  (* FILL IN HERE *) Admitted.
+  unfold factorial. unfold ";".
+  eapply T_App...
+  eapply T_Abs...
+  eapply T_App...
+  eapply T_Assign...
+  eapply T_Abs...
+  eapply T_If0...
+  eapply T_Mult...
+  eapply T_App...
+  eapply T_Deref...
+Qed.
 
 (** If your definition is correct, you should be able to just
     uncomment the example below; the proof should be fully
     automatic using the [reduce] tactic. *)
 
-(* 
+
 Lemma factorial_4 : exists st,
   <{ factorial 4 }> / nil -->* tm_const 24 / st.
 Proof.
   eexists. unfold factorial. reduce.
 Qed.
-*)
+
 (** [] *)
 
 (* ################################################################# *)
