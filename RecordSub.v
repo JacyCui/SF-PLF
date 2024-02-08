@@ -288,7 +288,11 @@ Example subtyping_example_1 :
   TRcd_kj <: TRcd_j.
 (* {k:A->A,j:B->B} <: {j:B->B} *)
 Proof with eauto.
-  (* FILL IN HERE *) Admitted.
+  unfold TRcd_kj, TRcd_j.
+  eapply S_Trans.
+  - apply S_RcdPerm... intros Contra; discriminate.
+  - apply S_RcdDepth... 
+Qed.
 (** [] *)
 
 (** **** Exercise: 1 star, standard (subtyping_example_2) *)
@@ -296,7 +300,8 @@ Example subtyping_example_2 :
   <{{ Top -> TRcd_kj }}> <:
           <{{ (C -> C) -> TRcd_j }}>.
 Proof with eauto.
-  (* FILL IN HERE *) Admitted.
+  apply S_Arrow... apply subtyping_example_1.
+Qed.
 (** [] *)
 
 (** **** Exercise: 1 star, standard (subtyping_example_3) *)
@@ -305,7 +310,8 @@ Example subtyping_example_3 :
           <{{ (k : B :: nil) -> nil }}>.
 (* {}->{j:A} <: {k:B}->{} *)
 Proof with eauto.
-  (* FILL IN HERE *) Admitted.
+  auto.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, standard (subtyping_example_4) *)
@@ -313,7 +319,16 @@ Example subtyping_example_4 :
   <{{ x : A :: y : B :: z : C :: nil }}> <:
   <{{ z : C :: y : B :: x : A :: nil }}>.
 Proof with eauto.
-  (* FILL IN HERE *) Admitted.
+  eapply S_Trans.
+  { apply S_RcdPerm... intros ?; discriminate. }
+  eapply S_Trans.
+  { apply S_RcdDepth.
+    - apply S_Refl...
+    - apply S_RcdPerm... intros ?; discriminate.
+    - auto.
+    - auto. }
+  apply S_RcdPerm... intros ?; discriminate.    
+Qed.
 (** [] *)
 
 End Examples.
@@ -417,7 +432,15 @@ Proof with eauto.
   intros U V1 V2 Hs.
   remember <{{ V1 -> V2 }}> as V.
   generalize dependent V2. generalize dependent V1.
-  (* FILL IN HERE *) Admitted.
+  induction Hs; intros; try solve_by_invert.
+  - exists V1, V2. split... subst. inversion H; subst; clear H.
+    split...
+  - destruct (IHHs2 _ _ HeqV) as [T1 [T2 [? []]]].
+    destruct (IHHs1 _ _ H) as [T3 [T4 [? []]]]. subst.
+    exists T3, T4...
+  - injection HeqV as ? ?. subst.
+    exists S1, S2...
+Qed.
 (** [] *)
 
 (* ################################################################# *)
@@ -477,8 +500,10 @@ Definition trcd_kj :=
 Example typing_example_0 :
   empty |-- trcd_kj \in TRcd_kj.
 (* empty |-- {k=(\z:A.z), j=(\z:B.z)} : {k:A->A,j:B->B} *)
-Proof.
-  (* FILL IN HERE *) Admitted.
+Proof with eauto.
+  unfold trcd_kj, TRcd_kj, TRcd_j.
+  apply T_RCons...
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, standard (typing_example_1) *)
@@ -488,7 +513,15 @@ Example typing_example_1 :
               {k=(\z:A,z), j=(\z:B,z)}
          : B->B *)
 Proof with eauto.
-  (* FILL IN HERE *) Admitted.
+  unfold trcd_kj, TRcd_kj, TRcd_j.
+  eapply T_App.
+  - apply T_Abs...
+  - eapply T_Sub.
+    + apply T_RCons...
+    + eapply S_Trans.
+      * apply S_RcdPerm... intros ?; discriminate.
+      * apply S_RcdDepth... 
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, standard, optional (typing_example_2) *)
@@ -499,7 +532,17 @@ Example typing_example_2 :
               (\z:C->C, {k=(\z:A,z), j=(\z:B,z)})
            : B->B *)
 Proof with eauto.
-  (* FILL IN HERE *) Admitted.
+  unfold trcd_kj, TRcd_kj, TRcd_j.
+  eapply T_App.
+  - apply T_Abs... eapply T_Proj.
+    + eapply T_App... apply T_Var...
+    + auto.
+  - apply T_Abs... eapply T_Sub.
+    + apply T_RCons...
+    + eapply S_Trans.
+      * apply S_RcdPerm... intros ?; discriminate.
+      * apply S_RcdDepth... 
+Qed.
 (** [] *)
 
 End Examples2.
@@ -569,7 +612,12 @@ Lemma canonical_forms_of_arrow_types : forall Gamma s T1 T2,
      exists x S1 s2,
         s = <{ \ x  : S1, s2 }>.
 Proof with eauto.
-  (* FILL IN HERE *) Admitted.
+  intros. remember <{{T1 -> T2}}> as T.
+  generalize dependent T2. generalize dependent T1.
+  induction H; intros; try solve_by_invert...
+  subst. apply sub_inversion_arrow in H1.
+  destruct H1 as [U1 [U2 [HT1 [HU1 HU2]]]]... 
+Qed.
 (** [] *)
 
 Theorem progress : forall t T,
@@ -748,7 +796,6 @@ Lemma substitution_preserves_typing : forall Gamma x U t v T,
    (x |-> U ; Gamma) |-- t \in T ->
    empty |-- v \in U   ->
    Gamma |-- [x:=v]t \in T.
-Proof.
 Proof.
   intros Gamma x U t v T Ht Hv.
   remember (x |-> U; Gamma) as Gamma'.
