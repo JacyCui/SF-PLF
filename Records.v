@@ -171,12 +171,12 @@ Notation i2 := "i2".
 
 (** [{ i1:A }] *)
 
-(* Check (RCons i1 A RNil). *)
+Check (Ty_RCons i1 A Ty_RNil).
 
 (** [{ i1:A->B, i2:A }] *)
 
-(* Check (RCons i1 (Arrow A B)
-           (RCons i2 A RNil)). *)
+Check (Ty_RCons i1 (Ty_Arrow A B)
+           (Ty_RCons i2 A Ty_RNil)).
 
 (* ----------------------------------------------------------------- *)
 (** *** Well-Formedness *)
@@ -380,20 +380,20 @@ Inductive has_type (Gamma : context) :tm -> ty -> Prop :=
   | T_App : forall T1 T2 t1 t2,
       Gamma |-- t1 \in (T1 -> T2) ->
       Gamma |-- t2 \in T1 ->
-      Gamma |-- ( t1 t2) \in T2
+      Gamma |-- (t1 t2) \in T2
   (* records: *)
   | T_Proj : forall i t Ti Tr,
       Gamma |-- t \in Tr ->
       Tlookup i Tr = Some Ti ->
       Gamma |-- (t --> i) \in Ti
- | T_RNil :
+  | T_RNil :
       Gamma |-- nil \in nil
   | T_RCons : forall i t T tr Tr,
       Gamma |-- t \in T ->
       Gamma |-- tr \in Tr ->
       record_ty Tr ->
       record_tm tr ->
-      Gamma |-- ( i := t :: tr) \in ( i : T :: Tr)
+      Gamma |-- (i := t :: tr) \in (i : T :: Tr)
 
 where "Gamma '|--' t '\in' T" := (has_type Gamma t T).
 
@@ -416,8 +416,7 @@ Hint Constructors has_type : core.
 Lemma typing_example_2 :
   empty |-- (\a : ( i1 : (A -> A) :: i2 : (B -> B) :: nil), a --> i2)
             ( i1 := (\a : A, a) :: i2 := (\a : B,a ) :: nil )  \in (B -> B).
-Proof.
-  (* FILL IN HERE *) Admitted.
+Proof. eauto 20. Qed.
 
 Example typing_nonexample :
   ~ exists T,
@@ -425,7 +424,8 @@ Example typing_nonexample :
        ( i1 := (\a : B, a) :: a ) \in
                T.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros [T H]; solve_by_inverts 2.
+Qed.
 
 Example typing_nonexample_2 : forall y,
   ~ exists T,
@@ -433,7 +433,8 @@ Example typing_nonexample_2 : forall y,
      (\a : ( i1 : A  :: nil ), a --> i1 )
       ( i1 := y :: i2 := y :: nil )  \in T.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros y [T H]. solve_by_inverts 4.
+Qed.
 (** [] *)
 
 (* ================================================================= *)
