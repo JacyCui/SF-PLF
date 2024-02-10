@@ -1673,4 +1673,11 @@ Proof. intros.
       eapply E_Some; eauto. apply pe_block_correct. apply Hkeval.
 Qed.
 
+(* Finish learning:
+
+Partial evaluation = Constant Propagation + Constant Folding
+                    + Deadcode Elimination
+
+*)
+
 (* 2024-01-02 21:54 *)
