@@ -20,6 +20,22 @@ This repository consists of two parts:
 
 
 
+## LibTactics Summary
+
+> You should `From PLF Require LibTactics` before using the following tactics.
+
+- `introv` and `inverts` improve naming and inversions.
+- `false` and `tryfalse` help discarding absurd goals.
+- `unfolds` automatically calls `unfold` on the head definition.
+- `gen` helps setting up goals for induction.
+- `splits` and `branch`, to deal with n-ary constructs.
+- `asserts_rewrite`, `cuts_rewrite`, `substs` and `fequals` help working with equalities.
+- `lets`, `forwards`, `specializes` and `applys` provide means of very conveniently instantiating lemmas.
+- `applys_eq` can save the need to perform manual rewriting steps before being able to apply a lemma.
+- `admits`, `admit_rewrite` and `admit_goal` give the flexibility to choose which subgoals to try and discharge first.
+
+
+
 ## Tacticals Summary
 
 |   Usage    |                           Meaning                            |
