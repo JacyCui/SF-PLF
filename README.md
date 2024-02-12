@@ -13,26 +13,38 @@ This repository consists of two parts:
 
 ## Proof Tactics Summary
 
-|                      Usage                      |                           Meaning                            |
-| :---------------------------------------------: | :----------------------------------------------------------: |
-| `specialize H with (a := your_a) (b := your_b)` | The hypothesis `H` will be instantiated on `your_a` and `your_b`. |
-|                   `exact ...`                   | If you know the exact proof term that proves the goal,<br />you can provide it directly using the `exact` tactic. |
+|                            Usage                             |                           Meaning                            |
+| :----------------------------------------------------------: | :----------------------------------------------------------: |
+| `specialize H with`<br />`(a := your_a)`<br />`(b := your_b)` | The hypothesis `H` will be instantiated on `your_a` and `your_b`. |
+|                         `exact ...`                          | If you know the exact proof term that proves the goal,<br />you can provide it directly using the `exact` tactic. |
+|                            `ring`                            | Compared to `lia`, adds support for multiplications, gives up support<br />for inequalities, and supports only integers (type `Z`) |
 
+> The following tactics are from the `LibTatics` library, which require `From PLF Require LibTactics` before using the following tactics.
 
+|        Usage        |                           Meaning                            |
+| :-----------------: | :----------------------------------------------------------: |
+|    `introv H...`    | Automatically introduce the  variables of a theorem and explicitly<br /> name the hypotheses |
+|     `inverts H`     | Behaves like inversion but performs substitution and clear.  |
+|      `splits`       | Applies to a goal made of a conjunction of `n` propositions and it<br /> produces `n` subgoals. |
+|     `branch k`      |   Proves a n-ary disjunction by proving its k'th subterm.    |
+| `asserts_rewrite E` |    Peforms `rewrite E` in goal and produces the goal `E`.    |
+|  `cuts_rewrite E`   | Similar to `asserts_rewrites E` except that<br />the two subgoals produced are swapped. |
+|      `substs`       | Similar to `subst` except that it doesn't fail with circular equalities. |
+|      `fequals`      | Similar to `f_equal` except that it discharges all the trivial subgoals produced. |
+|    `applys_eq H`    | Applies `H` and introduces some equality goals to match `H` with goal. |
+|      `unfolds`      |     Automatically calls `unfold` on the head definition.     |
+|   `unfolds in H`    |        Unfold the head definition in hypothesis `H`.         |
+|       `false`       | Calls `exfalso` and proves the goal if it contains absurd<br />or contradictory assumptions. |
+|      `false H`      |     Replaces the goal with `False` and then applies `H`.     |
+|        `gen`        | A shorthand for `generalize dependent` that accepts several arguments. |
+|       `sort`        | Reorganizes the proof context by placing all the variables<br />at the top and all the hypotheses at the bottom. |
+|       `iauto`       | Extends extends `eauto` with support for negation, conjunctions,<br />and disjunctions (very slow). Shorhand for `try solve [intuition auto]`. |
+|       `jauto`       | Extends extends `eauto` with support for negation, conjunctions,<br />and existential at the head of hypothesis. |
 
-## LibTactics Summary
+### Tips
 
-> You should `From PLF Require LibTactics` before using the following tactics.
-
-- `introv` and `inverts` improve naming and inversions.
-- `false` and `tryfalse` help discarding absurd goals.
-- `unfolds` automatically calls `unfold` on the head definition.
-- `gen` helps setting up goals for induction.
-- `splits` and `branch`, to deal with n-ary constructs.
-- `asserts_rewrite`, `cuts_rewrite`, `substs` and `fequals` help working with equalities.
-- `lets`, `forwards`, `specializes` and `applys` provide means of very conveniently instantiating lemmas.
-- `applys_eq` can save the need to perform manual rewriting steps before being able to apply a lemma.
-- `admits`, `admit_rewrite` and `admit_goal` give the flexibility to choose which subgoals to try and discharge first.
+- `inverts H as.` is like `inverts H` except that the variables and hypotheses being produced are placed in the goal rather than in the context.
+    - `inverts H as H1 H2 H3` is equivalent to `inverts H as; introv H1 H2 H3`.
 
 
 
