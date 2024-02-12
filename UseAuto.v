@@ -484,7 +484,7 @@ Lemma working_of_auto_1 : forall (P : nat->Prop),
   (* Hypothesis H3: *) (forall k, P (k + 1) -> P k) ->
   (* Goal:          *) (P 2).
 (* Uncomment "debug" in the following line to see the debug trace: *)
-Proof. intros P H1 H2 H3. (* debug *) auto. Qed.
+Proof. intros P H1 H2 H3. debug auto. Qed.
 
 (** The output message produced by [debug eauto] is as follows.
 
@@ -510,7 +510,7 @@ Lemma working_of_auto_2 : forall (P : nat->Prop),
   (* Hypothesis H3: *) (forall k, P (k + 1) -> P k) ->
   (* Hypothesis H2: *) (forall k, P (k - 1) -> P k) ->
   (* Goal:          *) (P 2).
-Proof. intros P H1 H3 H2. (* debug *) auto. Qed.
+Proof. intros P H1 H3 H2. debug auto. Qed.
 
 (** This time, the output message suggests that the proof search
     investigates many possibilities. If we print the proof term:
@@ -673,7 +673,7 @@ Ltac auto_tilde ::= auto.
     goal using the assumptions; if it fails, it tries using [auto],
     and if this still fails, then it calls [jauto]. Even though
     [jauto] is strictly stronger than [eassumption] and [auto], it
-    makes sense to call these tactics first, because, when the
+    makes sense to call these tactics first, because, when they
     succeed, they save a lot of time, and when they fail to prove
     the goal, they fail very quickly..
 
@@ -742,8 +742,18 @@ Theorem ceval_deterministic': forall c st st1 st2,
   st =[ c ]=> st2 ->
   st1 = st2.
 Proof.
-  (* FILL IN HERE *) admit.
-Admitted.
+  intros c st st1 st2 E1 E2.
+  generalize dependent st2.
+  induction E1; intros st2 E2; inversion E2; subst; auto.
+  - assert (st' = st'0) as EQ1 by auto.
+    subst st'0. auto.
+  - rewrite H in H5. inversion H5.
+  - rewrite H in H5. inversion H5.
+  - rewrite H in H2. inversion H2.
+  - rewrite H in H4. inversion H4.
+  - assert (st' = st'0) as EQ1 by auto.
+    subst st'0. auto.
+Qed.
 
 (** In fact, using automation is not just a matter of calling [auto]
     in place of one or two other tactics. Using automation is about
@@ -765,14 +775,8 @@ Theorem ceval_deterministic'': forall c st st1 st2,
   st1 = st2.
 Proof.
   introv E1 E2. gen st2.
-  induction E1; intros; inverts E2; tryfalse.
-  - auto.
-  - auto.
-  - assert (st' = st'0). auto. subst. auto.
-  - auto.
-  - auto.
-  - auto.
-  - assert (st' = st'0). auto. subst. auto.
+  induction E1; intros; inverts E2; tryfalse; auto;
+    assert (st' = st'0) by auto; subst; auto.
 Qed.
 
 (** To obtain a nice clean proof script, we have to remove the calls
@@ -884,8 +888,15 @@ Theorem preservation' : forall t t' T,
   t --> t'  ->
   empty |-- t' \in T.
 Proof.
-  (* FILL IN HERE *) admit.
-Admitted.
+  introv HT. gen t'.
+  remember empty as Gamma.
+  induction HT;
+       introv HE; subst;
+       try solve [inverts* HE].
+  - inverts* HE.
+    + applys* substitution_preserves_typing.
+      inverts* HT1.
+Qed.
 
 (* ================================================================= *)
 (** ** Progress for STLC *)
@@ -939,8 +950,18 @@ Theorem progress' : forall t T,
   empty |-- t \in T ->
   value t \/ exists t', t --> t'.
 Proof.
-  (* FILL IN HERE *) admit.
-Admitted.
+  introv Ht.
+  remember empty as Gamma.
+  induction Ht; subst Gamma; auto.
+  - false.
+  - right. destruct* IHHt1.
+    + destruct* IHHt2.
+      * eapply canonical_forms_fun in Ht1; [|assumption].
+        destruct* Ht1 as [x [t0 H1]]. subst.
+        exists* (<{ [x:=t2]t0 }>).
+  - right. destruct* IHHt1.
+    + destruct* (canonical_forms_bool t1); subst*.
+Qed.
 
 End PreservationProgressStlc.
 
@@ -982,8 +1003,10 @@ Qed.
 Theorem multistep_eval_ind : forall t v,
   t -->* v -> forall n, C n = v -> t ==> n.
 Proof.
-  (* FILL IN HERE *) admit.
-Admitted.
+  introv H1 H2. induction H1; subst.
+  - apply E_Const.
+  - applys* step__eval.
+Qed.
 
 (** Exercise: using the lemma above, simplify the proof of
     the result [multistep__eval]. You should use the tactics
@@ -993,8 +1016,9 @@ Admitted.
 Theorem multistep__eval' : forall t v,
   normal_form_of t v -> exists n, v = C n /\ t ==> n.
 Proof.
-  (* FILL IN HERE *) admit.
-Admitted.
+  introv H. inverts H. rewrite nf_same_as_value in H1.
+  inverts H1. exists n. split*. applys* multistep_eval_ind.
+Qed.
 
 (** If we try to combine the two proofs into a single one,
     we will likely fail, because of a limitation of the
@@ -1014,8 +1038,11 @@ Admitted.
 Theorem multistep__eval'' : forall t v,
   normal_form_of t v -> exists n, v = C n /\ t ==> n.
 Proof.
-  (* FILL IN HERE *) admit.
-Admitted.
+  introv H. inverts H. rewrite nf_same_as_value in H1.
+  inverts H1. exists n. split*. dependent induction H0.
+  - apply E_Const.
+  - applys* step__eval.
+Qed.
 
 End Semantics.
 
@@ -1323,8 +1350,10 @@ Lemma abs_arrow' : forall x S1 s2 T1 T2,
      T1 <: S1
   /\ (x |-> S1 ; empty) |-- s2 \in T2.
 Proof.
-  (* FILL IN HERE *) admit.
-Admitted.
+  introv Hty. lets [S2 [Hsub Hty1]]: typing_inversion_abs Hty.
+  lets [U1 [U2 [Heq [Hsub1 Hsub2]]]]: sub_inversion_arrow Hsub.
+  injection Heq as Heq; subst; eauto.
+Qed.
 
 End SubtypingInversion.
 
