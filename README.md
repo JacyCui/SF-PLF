@@ -36,6 +36,7 @@ This repository consists of two parts:
 |      `unfolds in H`       |        Unfold the head definition in hypothesis `H`.         |
 |          `false`          | Calls `exfalso` and proves the goal if it contains absurd<br />or contradictory assumptions. |
 |         `false H`         |     Replaces the goal with `False` and then applies `H`.     |
+|        `try false`        |             A shorthand for `try solve [false]`.             |
 |           `gen`           | A shorthand for `generalize dependent` that accepts several arguments. |
 |          `sort`           | Reorganizes the proof context by placing all the variables<br />at the top and all the hypotheses at the bottom. |
 |   `lets I: E0 E1 .. EN`   | Builds an hypothesis named `I` by applying the fact `E0` to the arguments<br />`E1` to `En`. `I` can also be a destruction pattern. |
@@ -46,6 +47,7 @@ This repository consists of two parts:
 | `specializes H E0 E1 ...` | The same as `lets H': H E0 E1 ...; clear H; remame H' into H` . |
 |          `iauto`          | Extends extends `eauto` with support for negation, conjunctions,<br />and disjunctions (very slow). Shorhand for `try solve [intuition auto]`. |
 |          `jauto`          | Extends extends `eauto` with support for negation, conjunctions,<br />and existential at the head of hypothesis. |
+|          `fold`           |               The reverse process of `unfold`.               |
 
 ### Tips
 
