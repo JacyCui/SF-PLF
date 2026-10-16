@@ -783,7 +783,7 @@ and the following typing rule:
       - Determinism of [step]
 (* becomes false, e.g. [idB false --> false /\ idB false --> zap] *)
       - Progress
-(* becomes false, e.g. [ |-- zap \in Bool /\ stuck zap] *)
+(* remains true *)
       - Preservation
 (* becomes false, e.g. [ |-- idB \in Bool -> Bool /\ idB --> zap 
             /\ |-- zap \in Bool] *)
@@ -812,7 +812,7 @@ Definition manual_grade_for_stlc_variation1 : option (nat*string) := None.
       - Determinism of [step]
 (* becomes false, e.g. [idB false --> false /\ idB false --> foo false] *)
       - Progress
-(* becomes false, e.g. [idB false --> foo false --> true false, stuck] *)
+(* remains true *)
       - Preservation
 (* becomes false, e.g. [ idB --> foo --> true 
           /\ |-- idB \in Bool -> Bool /\ |-- true \in Bool ] *)
@@ -858,7 +858,7 @@ Definition manual_grade_for_stlc_variation3 : option (nat*string) := None.
       - Determinism of [step]
 (* becomes false, e.g. [notB true --> false /\ notB true --> true] *)
       - Progress
-(* becomes false, e.g. [(if true then idB else idB) true --> true true, stuck] *)
+(* remains true *)
       - Preservation
 (* becomes false, e.g. [if true then idB else idB --> true /\
   |-- if true then idB else idB \in Bool -> Bool /\
