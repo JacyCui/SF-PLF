@@ -334,7 +334,7 @@ End ExamplePrettyAssertions.
   1) valid
   2) valid
   3) valid
-  4) invalid
+  4) valid
   5) invalid
   6) valid
   7) valid

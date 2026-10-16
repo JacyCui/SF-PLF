@@ -576,8 +576,8 @@ Definition prog_i : com :=
      end }>.
 
 Definition equiv_classes : list (list com) :=
-  [[prog_a]; [prog_b; prog_e]; [prog_c; prog_h]; 
-  [prog_d]; [prog_f; prog_g]; [prog_i]].
+  [[prog_a; prog_d]; [prog_b; prog_e]; [prog_c; prog_h];
+  [prog_f; prog_g]; [prog_i]].
 
 (* Do not modify the following line: *)
 Definition manual_grade_for_equiv_classes : option (nat*string) := None.
