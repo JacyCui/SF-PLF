@@ -520,7 +520,7 @@ Notation "t1 ; t2" := (tseq t1 t2) (in custom stlc at level 3).
 
 would it behave the same? *)
 
-(* According to the SmallStep semantics of [let], yes. *)
+(* No since the evaluation of `!a` is delayed *)
 
 (* Do not modify the following line: *)
 Definition manual_grade_for_compact_update : option (nat*string) := None.
@@ -1286,7 +1286,7 @@ Definition store_well_typed (ST:store_ty) (st:store) :=
     different store typings [ST1] and [ST2] such that both
     [ST1 |-- st] and [ST2 |-- st]? *)
 
-(* [!(loc 0) :: nil] *)
+(* (<{ \x:Nat, (!(loc 0)) x }> :: nil) *)
 
 Theorem store_not_unique:
   exists st, exists ST1, exists ST2,
@@ -1294,12 +1294,20 @@ Theorem store_not_unique:
     store_well_typed ST2 st /\
     ST1 <> ST2.
 Proof.
-  exists (<{!(loc 0)}> :: nil), (Ty_Nat :: nil), (Ty_Unit :: nil).
-  unfold store_well_typed. split; split; try split; simpl; intros;
-    try (inversion H; subst; clear H; try solve_by_invert;
-    unfold store_lookup; unfold store_Tlookup; simpl);
-    auto.
-  intros Contra. discriminate Contra.
+  exists (<{ \x:Nat, (!(loc 0)) x }> :: nil).
+  exists (<{{ Nat -> Nat }}> :: nil).
+  exists (<{{ Nat -> Unit }}> :: nil).
+  split; 
+    try split;
+    try split;
+    try reflexivity;
+    try (intros Hcontra; injection Hcontra; intros H1; discriminate H1);
+    simpl; try intros l Hlen;
+    assert (l = 0); try lia;
+    subst; unfold store_lookup, store_Tlookup; simpl;
+    apply T_Abs; apply (T_App _ _ Ty_Nat);
+    try (apply T_Deref; apply T_Loc; simpl; lia);
+    try auto.
 Qed.
 (** [] *)
 
