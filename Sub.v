@@ -494,7 +494,7 @@ Definition manual_grade_for_subtype_order : option (nat*string) := None.
            S <: A->A ->
            exists T,
               S = T->T  /\  T <: A
-      _true_
+      _false_
 
       forall S T1 T2,
            (S <: T1 -> T2) ->
@@ -642,12 +642,12 @@ Definition manual_grade_for_small_large_2 : option (nat*string) := None.
        exists S,
          empty |-- (\p:(A*T), (p.snd) (p.fst)) \in S
       
-      [Top -> S]
+      Does not exist.
 
    - What is the _largest_ type [T] that makes the same
      assertion true?
 
-      [A -> S]
+      [A -> Top]
 *)
 
 (* Do not modify the following line: *)
@@ -662,7 +662,7 @@ Definition manual_grade_for_small_large_4 : option (nat*string) := None.
       exists S t,
         empty |-- (\x:T, x x) t \in S
 
-      [Top -> S]
+      Does not exist.
 *)
 
 (* Do not modify the following line: *)
@@ -691,8 +691,13 @@ Definition manual_grade_for_smallest_2 : option (nat*string) := None.
     differently, even if each is a subtype of the other.  For example,
     [{x:A,y:B}] and [{y:B,x:A}] are different.)
 
-    [{x:Top, y:C->C}, {x:A, y:C->Top}, {x:Top, y:C->Top},
-     {y:C->C, x:Top}, {y:C->Top, x:A}, {y:C->Top, x:Top}]
+    [
+      Top,
+      {},
+      {x:Top}, {x:A},
+      {y:Top}, {y:C->Top}, {y:C->C},
+      {x, y} 2 * 2 * 3  (permutation * x * y)
+    ]
 
     [] *)
 
